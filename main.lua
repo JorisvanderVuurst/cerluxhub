@@ -1,50 +1,14 @@
 local X;
 X = hookmetamethod(game, "__namecall", function(self, ...)
-    if checkcaller() and getnamecallmethod() == "Ban" then
-       local eval1 = {false}
-       local eval2 = {false}
-       local args = {...}
-       if debug.validlevel(3) and self.Parent == nil then
-           local stack = debug.getstack(3)
-           local counter = 0
-           local expected;
-           for i,v in pairs(stack) do
-               if v == game.Players.LocalPlayer.Name or v == "Ban" or v == "Packet" or v == "Network" then
-                   counter = counter + 1
-               elseif type(v) == "number" then
-                   if type(expected) == "number" then
-                       expected = expected + v
-                   else
-                       expected = v
-                   end
-               end
-           end
-           if counter == expected then
-               eval1 = {true, counter+5}
-           end
-       end
-       if eval1[1] then
-           if #args == eval1[2] then
-               local counter = 0
-               local outgoingkey;
-               for i,v in pairs(args) do
-                   if v == game.Players.LocalPlayer.Name or v == "Ban" or v == "Packet" or v == "Network" then
-                       counter = counter + 1
-                   elseif tostring(i) == "userdata: 0x000000001bdfb8ea" then
-                       outgoingkey = v
-                   end
-                   if counter == eval1[2] then
-                       eval2 = {true, outgoingkey}
-                   end
-               end
-           end
-           if eval2[1] then
-               game:GetService("NetworkClient"):SetOutgoingKBPSLimit(0, outgoingkey)
-               game.Players.LocalPlayer:Kick("Game attempted to ban you but was blocked")
-               return wait(9e9)
-           end
-       end
+    local args = {...}
+    local method = getnamecallmethod()
+    local methods = {"Ban", "Kick", "kick", "ban", "Remove", "remove", "destroy", "Destroy", "Fire", "fire"}
+    
+    if checkcaller() and table.find(methods, method) then
+        game.Players.LocalPlayer:Kick("Game attempted to ban/kick you but was blocked")
+        return wait(9e9)
     end
+    
     return X(self, ...)
 end)
 
@@ -56,8 +20,7 @@ local userInputService = game:GetService("UserInputService")
 local guiService = game:GetService("GuiService")
 local textService = game:GetService("TextService")
 
-local isPF = game.PlaceId == 292439477
-
+-- Create GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "UniversixGUI"
 gui.ResetOnSpawn = false
@@ -94,6 +57,7 @@ title.Font = Enum.Font.GothamBold
 title.BackgroundTransparency = 1
 title.Parent = titleBar
 
+-- Make GUI draggable
 local dragging = false
 local dragStart = nil
 local startPos = nil
@@ -124,6 +88,7 @@ userInputService.InputEnded:Connect(function(input)
     end
 end)
 
+-- Create content frames
 local contentFrame = Instance.new("Frame")
 contentFrame.Name = "ContentFrame"
 contentFrame.Size = UDim2.new(1, 0, 1, -40)
@@ -132,6 +97,7 @@ contentFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = mainFrame
 
+-- Create tabs
 local function createTab(name, position)
     local tab = Instance.new("TextButton")
     tab.Name = name .. "Tab"
@@ -153,6 +119,7 @@ local aimTab = createTab("Aimbot", 0)
 local espTab = createTab("ESP", 1)
 local miscTab = createTab("Misc", 2)
 
+-- Protect GUI
 pcall(function()
     if syn and syn.protect_gui then
         syn.protect_gui(gui)
@@ -164,18 +131,21 @@ pcall(function()
     end
 end)
 
+-- Aimbot variables
 local aimTarget = nil
 local aimPart = "Head"
 local aimbotActive = false
 local silentAimActive = false
 local fovValue = 100
-local smoothValue = isPF and 0.5 or 0.2
+local smoothValue = 0.2
 local showFOV = false
 
+-- ESP variables  
 local espActive = false
 local boxEspActive = false
 local nameEspActive = false
 
+-- Create FOV circle
 local fovCircle = Drawing.new("Circle")
 fovCircle.Visible = false
 fovCircle.Thickness = 2
@@ -184,46 +154,34 @@ fovCircle.Filled = false
 fovCircle.Transparency = 1
 fovCircle.NumSides = 60
 
+-- Update FOV circle
 runService.RenderStepped:Connect(function()
-    fovCircle.Position = Vector2.new(mouse.X, mouse.Y + (isPF and 36 or 0))
+    fovCircle.Position = Vector2.new(mouse.X, mouse.Y)
     fovCircle.Radius = fovValue
     fovCircle.Visible = showFOV and (aimbotActive or silentAimActive)
 end)
 
+-- Aimbot functions
 local function getClosestPlayerToMouse()
     local closestPlayer = nil
     local shortestDistance = math.huge
 
     for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= player and plr.Character then
-            local isEnemy = isPF and plr.Team ~= player.Team or not isPF
-            
-            if isEnemy then
-                local character = plr.Character
-                local humanoid = character:FindFirstChild("Humanoid")
-                local rootPart = character:FindFirstChild("HumanoidRootPart")
-                local targetPart = character:FindFirstChild(aimPart)
+        if plr ~= player and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+            local character = plr.Character
+            local humanoid = character:FindFirstChild("Humanoid")
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            local targetPart = character:FindFirstChild(aimPart)
 
-                if humanoid and rootPart and targetPart and humanoid.Health > 0 then
-                    local ray = Ray.new(camera.CFrame.Position, (targetPart.Position - camera.CFrame.Position).Unit * 1000)
-                    local ignoreList = {player.Character, camera}
-                    local hit, pos = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
+            if humanoid and rootPart and targetPart then
+                local screenPos, onScreen = camera:WorldToScreenPoint(targetPart.Position)
+                
+                if onScreen then
+                    local magnitude = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouse.X, mouse.Y)).magnitude
                     
-                    if hit and hit:IsDescendantOf(character) then
-                        local velocity = rootPart.Velocity
-                        local bulletSpeed = 2800
-                        local timeToHit = (targetPart.Position - camera.CFrame.Position).Magnitude / bulletSpeed
-                        local predictedPosition = targetPart.Position + (velocity * timeToHit)
-                        local screenPos, onScreen = camera:WorldToScreenPoint(predictedPosition)
-                        
-                        if onScreen then
-                            local magnitude = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouse.X, mouse.Y)).magnitude
-                            
-                            if magnitude < shortestDistance and magnitude <= fovValue then
-                                closestPlayer = targetPart
-                                shortestDistance = magnitude
-                            end
-                        end
+                    if magnitude < shortestDistance and magnitude <= fovValue then
+                        closestPlayer = targetPart
+                        shortestDistance = magnitude
                     end
                 end
             end
@@ -233,183 +191,61 @@ local function getClosestPlayerToMouse()
     return closestPlayer
 end
 
+-- ESP function
 local function createESP(character)
     local plr = game.Players:GetPlayerFromCharacter(character)
     if not plr or plr == player then return end
     
-    if isPF and plr.Team == player.Team then return end
-    
-    for _, esp in pairs(character:GetChildren()) do
-        if esp.Name:find("ESP") then
-            esp:Destroy()
-        end
-    end
-
-    local espFolder = Instance.new("Folder")
-    espFolder.Name = "ESP_Holder"
-    espFolder.Parent = character
-
-    local boxOutline = Drawing.new("Square")
-    local box = Drawing.new("Square")
-    local healthBar = Drawing.new("Square")
-    local healthBarOutline = Drawing.new("Square")
-    local nameTag = Drawing.new("Text")
-
-    box.Thickness = 1
-    box.Color = Color3.fromRGB(255, 0, 0)
-    box.Filled = false
-    box.Transparency = 1
-    boxOutline.Thickness = 3
-    boxOutline.Color = Color3.fromRGB(0, 0, 0)
-    boxOutline.Filled = false
-    boxOutline.Transparency = 1
-
-    healthBar.Thickness = 1
-    healthBar.Filled = true
-    healthBar.Color = Color3.fromRGB(0, 255, 0)
-    healthBar.Transparency = 1
-    healthBarOutline.Thickness = 1
-    healthBarOutline.Filled = false
-    healthBarOutline.Color = Color3.fromRGB(0, 0, 0)
-    healthBarOutline.Transparency = 1
-
-    nameTag.Size = 14
-    nameTag.Center = true
-    nameTag.Outline = true
-    nameTag.Color = Color3.fromRGB(255, 0, 0)
-    nameTag.Font = 2
+    local highlight = Instance.new("Highlight")
+    highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green neon fill
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
+    highlight.FillTransparency = 0.5 -- Semi-transparent fill
+    highlight.OutlineTransparency = 0
+    highlight.Parent = character
+    highlight.Enabled = espActive
 
     local connection = runService.RenderStepped:Connect(function()
         if not character:IsDescendantOf(game) or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChild("Humanoid") then
-            box.Visible = false
-            boxOutline.Visible = false
-            healthBar.Visible = false
-            healthBarOutline.Visible = false
-            nameTag.Visible = false
-            return
-        end
-
-        local humanoid = character:FindFirstChild("Humanoid")
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
-
-        local minX, minY, minZ = math.huge, math.huge, math.huge
-        local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
-        
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                local size = part.Size
-                local cf = part.CFrame
-                
-                local corners = {
-                    cf * CFrame.new(-size.X/2, -size.Y/2, -size.Z/2),
-                    cf * CFrame.new(-size.X/2, -size.Y/2, size.Z/2),
-                    cf * CFrame.new(-size.X/2, size.Y/2, -size.Z/2),
-                    cf * CFrame.new(-size.X/2, size.Y/2, size.Z/2),
-                    cf * CFrame.new(size.X/2, -size.Y/2, -size.Z/2),
-                    cf * CFrame.new(size.X/2, -size.Y/2, size.Z/2),
-                    cf * CFrame.new(size.X/2, size.Y/2, -size.Z/2),
-                    cf * CFrame.new(size.X/2, size.Y/2, size.Z/2)
-                }
-                
-                for _, corner in pairs(corners) do
-                    local pos = corner.Position
-                    minX = math.min(minX, pos.X)
-                    minY = math.min(minY, pos.Y)
-                    minZ = math.min(minZ, pos.Z)
-                    maxX = math.max(maxX, pos.X)
-                    maxY = math.max(maxY, pos.Y)
-                    maxZ = math.max(maxZ, pos.Z)
-                end
-            end
-        end
-        
-        local topLeft = camera:WorldToViewportPoint(Vector3.new(minX, maxY, minZ))
-        local bottomRight = camera:WorldToViewportPoint(Vector3.new(maxX, minY, maxZ))
-        local pos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-        
-        if not onScreen or not espActive then
-            box.Visible = false
-            boxOutline.Visible = false
-            healthBar.Visible = false
-            healthBarOutline.Visible = false
-            nameTag.Visible = false
-            return
-        end
-
-        local boxSize = Vector2.new(
-            math.abs(topLeft.X - bottomRight.X),
-            math.abs(topLeft.Y - bottomRight.Y)
-        )
-        local boxPosition = Vector2.new(
-            math.min(topLeft.X, bottomRight.X),
-            math.min(topLeft.Y, bottomRight.Y)
-        )
-
-        box.Size = boxSize
-        box.Position = boxPosition
-        boxOutline.Size = boxSize
-        boxOutline.Position = boxPosition
-        box.Visible = true
-        boxOutline.Visible = true
-
-        local healthBarSize = Vector2.new(2, boxSize.Y * (humanoid.Health/humanoid.MaxHealth))
-        local healthBarPosition = Vector2.new(boxPosition.X - 5, boxPosition.Y + (boxSize.Y - healthBarSize.Y))
-        healthBar.Size = healthBarSize
-        healthBar.Position = healthBarPosition
-        healthBarOutline.Size = Vector2.new(2, boxSize.Y)
-        healthBarOutline.Position = Vector2.new(boxPosition.X - 5, boxPosition.Y)
-        healthBar.Visible = true
-        healthBarOutline.Visible = true
-
-        local distance = (rootPart.Position - camera.CFrame.Position).Magnitude
-        nameTag.Position = Vector2.new((boxPosition.X + boxSize.X/2), boxPosition.Y - 20)
-        nameTag.Text = string.format("%s [%dm]", plr.Name, math.floor(distance))
-        nameTag.Visible = true
-
-        local healthPercentage = humanoid.Health/humanoid.MaxHealth
-        healthBar.Color = Color3.fromRGB(255 - 255 * healthPercentage, 255 * healthPercentage, 0)
-    end)
-
-    character.AncestryChanged:Connect(function()
-        if not character:IsDescendantOf(game) then
+            highlight:Destroy()
             connection:Disconnect()
-            box:Remove()
-            boxOutline:Remove()
-            healthBar:Remove()
-            healthBarOutline:Remove()
-            nameTag:Remove()
+            return
+        end
+        highlight.Enabled = espActive
+    end)
+
+    character.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            highlight:Destroy()
+            connection:Disconnect()
         end
     end)
 end
 
-game.Players.PlayerAdded:Connect(function(plr)
+-- ESP setup
+local function setupESPForPlayer(plr)
     if plr ~= player then
-        plr.CharacterAdded:Connect(function(char)
-            createESP(char)
-        end)
-    end
-end)
-
-for _, plr in pairs(game.Players:GetPlayers()) do
-    if plr ~= player and plr.Character then
-        createESP(plr.Character)
-    end
-    if plr ~= player then
+        if plr.Character then
+            createESP(plr.Character)
+        end
         plr.CharacterAdded:Connect(function(char)
             createESP(char)
         end)
     end
 end
 
+game.Players.PlayerAdded:Connect(setupESPForPlayer)
+
+-- Setup ESP for existing players
+for _, plr in pairs(game.Players:GetPlayers()) do
+    setupESPForPlayer(plr)
+end
+
+-- Aimbot loop
 runService.RenderStepped:Connect(function()
     if aimbotActive and userInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
         local target = getClosestPlayerToMouse()
         if target then
-            local velocity = target.Parent.HumanoidRootPart.Velocity
-            local bulletSpeed = 2800
-            local timeToHit = (target.Position - camera.CFrame.Position).Magnitude / bulletSpeed
-            local predictedPosition = target.Position + (velocity * timeToHit)
-            local targetPos = camera:WorldToScreenPoint(predictedPosition)
+            local targetPos = camera:WorldToScreenPoint(target.Position)
             local mousePos = Vector2.new(mouse.X, mouse.Y)
             local moveAmount = (Vector2.new(targetPos.X, targetPos.Y) - mousePos) * smoothValue
             mousemoverel(moveAmount.X, moveAmount.Y)
@@ -417,6 +253,7 @@ runService.RenderStepped:Connect(function()
     end
 end)
 
+-- Silent aim
 local oldNamecall
 oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
@@ -425,16 +262,11 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     if silentAimActive and (method == "FindPartOnRayWithIgnoreList" or method == "FindPartOnRay" or method == "Raycast") then
         local target = getClosestPlayerToMouse()
         if target then
-            local velocity = target.Parent.HumanoidRootPart.Velocity
-            local bulletSpeed = 2800
-            local timeToHit = (target.Position - camera.CFrame.Position).Magnitude / bulletSpeed
-            local predictedPosition = target.Position + (velocity * timeToHit)
-            
             if method == "Raycast" then
-                args[1] = (predictedPosition - camera.CFrame.Position).Unit
-                args[2] = (predictedPosition - camera.CFrame.Position).Magnitude
+                args[1] = (target.Position - camera.CFrame.Position).Unit
+                args[2] = (target.Position - camera.CFrame.Position).Magnitude
             else
-                args[1] = Ray.new(camera.CFrame.Position, (predictedPosition - camera.CFrame.Position).Unit * 1000)
+                args[1] = Ray.new(camera.CFrame.Position, (target.Position - camera.CFrame.Position).Unit * 1000)
             end
             return oldNamecall(self, unpack(args))
         end
@@ -443,6 +275,7 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     return oldNamecall(self, ...)
 end)
 
+-- Create content frames
 local aimContent = Instance.new("Frame")
 aimContent.Name = "AimContent"
 aimContent.Size = UDim2.new(1, 0, 1, -50)
@@ -466,6 +299,7 @@ miscContent.BackgroundTransparency = 1
 miscContent.Visible = false
 miscContent.Parent = contentFrame
 
+-- Tab switching
 aimTab.MouseButton1Click:Connect(function()
     aimContent.Visible = true
     espContent.Visible = false
@@ -484,6 +318,7 @@ miscTab.MouseButton1Click:Connect(function()
     miscContent.Visible = true
 end)
 
+-- UI Components
 local function createSlider(name, parent, min, max, default, callback)
     local sliderHolder = Instance.new("Frame")
     sliderHolder.Name = name .. "Holder"
@@ -632,7 +467,7 @@ local function createDropdown(name, parent, options, callback)
     return dropdownHolder
 end
 
--- Create aimbot toggles and sliders
+-- Create aimbot controls
 createToggle("Aimbot", aimContent, function(enabled)
     aimbotActive = enabled
 end)
@@ -645,7 +480,7 @@ createToggle("Show FOV", aimContent, function(enabled)
     showFOV = enabled
 end)
 
-createDropdown("Aim Part", aimContent, {"Head", "Torso"}, function(selected)
+createDropdown("Aim Part", aimContent, {"Head", "HumanoidRootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg"}, function(selected)
     aimPart = selected
 end)
 
@@ -657,18 +492,24 @@ createSlider("Smoothness", aimContent, 0.01, 1, smoothValue, function(value)
     smoothValue = value
 end)
 
--- Create ESP toggles
-createToggle("ESP", espContent, function(enabled)
+-- Create ESP controls
+createToggle("ESP Master Toggle", espContent, function(enabled)
     espActive = enabled
 end)
 
--- Create misc features
+-- Create misc controls
 createToggle("Speed Hack", miscContent, function(enabled)
+    local speedConnection
     if enabled then
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 50
-        end
+        speedConnection = runService.Heartbeat:Connect(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = 50
+            end
+        end)
     else
+        if speedConnection then
+            speedConnection:Disconnect()
+        end
         if player.Character and player.Character:FindFirstChild("Humanoid") then
             player.Character.Humanoid.WalkSpeed = 16
         end
@@ -680,10 +521,56 @@ createToggle("Jump Power", miscContent, function(enabled)
         if player.Character and player.Character:FindFirstChild("Humanoid") then
             player.Character.Humanoid.JumpPower = 100
         end
+        
+        player.CharacterAdded:Connect(function(char)
+            local humanoid = char:WaitForChild("Humanoid")
+            humanoid.JumpPower = 100
+        end)
     else
         if player.Character and player.Character:FindFirstChild("Humanoid") then
             player.Character.Humanoid.JumpPower = 50
         end
-        player.Character.Humanoid.JumpPower = 50
+        
+        player.CharacterAdded:Connect(function(char)
+            local humanoid = char:WaitForChild("Humanoid")
+            humanoid.JumpPower = 50
+        end)
+    end
+end)
+
+createToggle("Infinite Jump", miscContent, function(enabled)
+    local connection
+    if enabled then
+        connection = userInputService.JumpRequest:Connect(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    else
+        if connection then
+            connection:Disconnect()
+        end
+    end
+end)
+
+createToggle("No Clip", miscContent, function(enabled)
+    local function updateNoclip()
+        if player.Character then
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = not enabled
+                end
+            end
+        end
+    end
+    
+    local connection
+    if enabled then
+        connection = runService.Stepped:Connect(updateNoclip)
+    else
+        if connection then
+            connection:Disconnect()
+        end
+        updateNoclip()
     end
 end)
