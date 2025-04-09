@@ -205,29 +205,16 @@ local function getClosestPlayerToMouse()
                 local targetPart = character:FindFirstChild(aimPart)
 
                 if humanoid and rootPart and targetPart and humanoid.Health > 0 then
-                    if isPF then
-                        local ray = Ray.new(camera.CFrame.Position, (targetPart.Position - camera.CFrame.Position).Unit * 1000)
-                        local ignoreList = {player.Character, camera}
-                        local hit, pos = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
-                        
-                        if hit and hit:IsDescendantOf(character) then
-                            local velocity = rootPart.Velocity
-                            local bulletSpeed = 2800
-                            local timeToHit = (targetPart.Position - camera.CFrame.Position).Magnitude / bulletSpeed
-                            local predictedPosition = targetPart.Position + (velocity * timeToHit)
-                            local screenPos, onScreen = camera:WorldToScreenPoint(predictedPosition)
-                            
-                            if onScreen then
-                                local magnitude = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouse.X, mouse.Y)).magnitude
-                                
-                                if magnitude < shortestDistance and magnitude <= fovValue then
-                                    closestPlayer = targetPart
-                                    shortestDistance = magnitude
-                                end
-                            end
-                        end
-                    else
-                        local screenPos, onScreen = camera:WorldToScreenPoint(targetPart.Position)
+                    local ray = Ray.new(camera.CFrame.Position, (targetPart.Position - camera.CFrame.Position).Unit * 1000)
+                    local ignoreList = {player.Character, camera}
+                    local hit, pos = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
+                    
+                    if hit and hit:IsDescendantOf(character) then
+                        local velocity = rootPart.Velocity
+                        local bulletSpeed = 2800
+                        local timeToHit = (targetPart.Position - camera.CFrame.Position).Magnitude / bulletSpeed
+                        local predictedPosition = targetPart.Position + (velocity * timeToHit)
+                        local screenPos, onScreen = camera:WorldToScreenPoint(predictedPosition)
                         
                         if onScreen then
                             local magnitude = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouse.X, mouse.Y)).magnitude
@@ -305,129 +292,82 @@ local function createESP(character)
         local humanoid = character:FindFirstChild("Humanoid")
         local rootPart = character:FindFirstChild("HumanoidRootPart")
 
-        if isPF then
-            local minX, minY, minZ = math.huge, math.huge, math.huge
-            local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
-            
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    local size = part.Size
-                    local cf = part.CFrame
-                    
-                    local corners = {
-                        cf * CFrame.new(-size.X/2, -size.Y/2, -size.Z/2),
-                        cf * CFrame.new(-size.X/2, -size.Y/2, size.Z/2),
-                        cf * CFrame.new(-size.X/2, size.Y/2, -size.Z/2),
-                        cf * CFrame.new(-size.X/2, size.Y/2, size.Z/2),
-                        cf * CFrame.new(size.X/2, -size.Y/2, -size.Z/2),
-                        cf * CFrame.new(size.X/2, -size.Y/2, size.Z/2),
-                        cf * CFrame.new(size.X/2, size.Y/2, -size.Z/2),
-                        cf * CFrame.new(size.X/2, size.Y/2, size.Z/2)
-                    }
-                    
-                    for _, corner in pairs(corners) do
-                        local pos = corner.Position
-                        minX = math.min(minX, pos.X)
-                        minY = math.min(minY, pos.Y)
-                        minZ = math.min(minZ, pos.Z)
-                        maxX = math.max(maxX, pos.X)
-                        maxY = math.max(maxY, pos.Y)
-                        maxZ = math.max(maxZ, pos.Z)
-                    end
+        local minX, minY, minZ = math.huge, math.huge, math.huge
+        local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+        
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                local size = part.Size
+                local cf = part.CFrame
+                
+                local corners = {
+                    cf * CFrame.new(-size.X/2, -size.Y/2, -size.Z/2),
+                    cf * CFrame.new(-size.X/2, -size.Y/2, size.Z/2),
+                    cf * CFrame.new(-size.X/2, size.Y/2, -size.Z/2),
+                    cf * CFrame.new(-size.X/2, size.Y/2, size.Z/2),
+                    cf * CFrame.new(size.X/2, -size.Y/2, -size.Z/2),
+                    cf * CFrame.new(size.X/2, -size.Y/2, size.Z/2),
+                    cf * CFrame.new(size.X/2, size.Y/2, -size.Z/2),
+                    cf * CFrame.new(size.X/2, size.Y/2, size.Z/2)
+                }
+                
+                for _, corner in pairs(corners) do
+                    local pos = corner.Position
+                    minX = math.min(minX, pos.X)
+                    minY = math.min(minY, pos.Y)
+                    minZ = math.min(minZ, pos.Z)
+                    maxX = math.max(maxX, pos.X)
+                    maxY = math.max(maxY, pos.Y)
+                    maxZ = math.max(maxZ, pos.Z)
                 end
             end
-            
-            local topLeft = camera:WorldToViewportPoint(Vector3.new(minX, maxY, minZ))
-            local bottomRight = camera:WorldToViewportPoint(Vector3.new(maxX, minY, maxZ))
-            local pos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-            
-            if not onScreen or not espActive then
-                box.Visible = false
-                boxOutline.Visible = false
-                healthBar.Visible = false
-                healthBarOutline.Visible = false
-                nameTag.Visible = false
-                return
-            end
-
-            local boxSize = Vector2.new(
-                math.abs(topLeft.X - bottomRight.X),
-                math.abs(topLeft.Y - bottomRight.Y)
-            )
-            local boxPosition = Vector2.new(
-                math.min(topLeft.X, bottomRight.X),
-                math.min(topLeft.Y, bottomRight.Y)
-            )
-
-            box.Size = boxSize
-            box.Position = boxPosition
-            boxOutline.Size = boxSize
-            boxOutline.Position = boxPosition
-            box.Visible = true
-            boxOutline.Visible = true
-
-            local healthBarSize = Vector2.new(2, boxSize.Y * (humanoid.Health/humanoid.MaxHealth))
-            local healthBarPosition = Vector2.new(boxPosition.X - 5, boxPosition.Y + (boxSize.Y - healthBarSize.Y))
-            healthBar.Size = healthBarSize
-            healthBar.Position = healthBarPosition
-            healthBarOutline.Size = Vector2.new(2, boxSize.Y)
-            healthBarOutline.Position = Vector2.new(boxPosition.X - 5, boxPosition.Y)
-            healthBar.Visible = true
-            healthBarOutline.Visible = true
-
-            local distance = (rootPart.Position - camera.CFrame.Position).Magnitude
-            nameTag.Position = Vector2.new((boxPosition.X + boxSize.X/2), boxPosition.Y - 20)
-            nameTag.Text = string.format("%s [%dm]", plr.Name, math.floor(distance))
-            nameTag.Visible = true
-
-            local healthPercentage = humanoid.Health/humanoid.MaxHealth
-            healthBar.Color = Color3.fromRGB(255 - 255 * healthPercentage, 255 * healthPercentage, 0)
-        else
-            local pos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-            
-            if not onScreen or not espActive then
-                box.Visible = false
-                boxOutline.Visible = false
-                healthBar.Visible = false
-                healthBarOutline.Visible = false
-                nameTag.Visible = false
-                return
-            end
-
-            local size = rootPart.Size * Vector3.new(2, 3, 0)
-            local boxSize = Vector2.new(
-                camera.ViewportSize.X / (pos.Z * 2) * size.X,
-                camera.ViewportSize.Y / (pos.Z * 2) * size.Y
-            )
-            local boxPosition = Vector2.new(
-                pos.X - boxSize.X/2,
-                pos.Y - boxSize.Y/2
-            )
-
-            box.Size = boxSize
-            box.Position = boxPosition
-            boxOutline.Size = boxSize
-            boxOutline.Position = boxPosition
-            box.Visible = true
-            boxOutline.Visible = true
-
-            local healthBarSize = Vector2.new(2, boxSize.Y * (humanoid.Health/humanoid.MaxHealth))
-            local healthBarPosition = Vector2.new(boxPosition.X - 5, boxPosition.Y + (boxSize.Y - healthBarSize.Y))
-            healthBar.Size = healthBarSize
-            healthBar.Position = healthBarPosition
-            healthBarOutline.Size = Vector2.new(2, boxSize.Y)
-            healthBarOutline.Position = Vector2.new(boxPosition.X - 5, boxPosition.Y)
-            healthBar.Visible = true
-            healthBarOutline.Visible = true
-
-            local distance = (rootPart.Position - camera.CFrame.Position).Magnitude
-            nameTag.Position = Vector2.new((boxPosition.X + boxSize.X/2), boxPosition.Y - 20)
-            nameTag.Text = string.format("%s [%dm]", plr.Name, math.floor(distance))
-            nameTag.Visible = true
-
-            local healthPercentage = humanoid.Health/humanoid.MaxHealth
-            healthBar.Color = Color3.fromRGB(255 - 255 * healthPercentage, 255 * healthPercentage, 0)
         end
+        
+        local topLeft = camera:WorldToViewportPoint(Vector3.new(minX, maxY, minZ))
+        local bottomRight = camera:WorldToViewportPoint(Vector3.new(maxX, minY, maxZ))
+        local pos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+        
+        if not onScreen or not espActive then
+            box.Visible = false
+            boxOutline.Visible = false
+            healthBar.Visible = false
+            healthBarOutline.Visible = false
+            nameTag.Visible = false
+            return
+        end
+
+        local boxSize = Vector2.new(
+            math.abs(topLeft.X - bottomRight.X),
+            math.abs(topLeft.Y - bottomRight.Y)
+        )
+        local boxPosition = Vector2.new(
+            math.min(topLeft.X, bottomRight.X),
+            math.min(topLeft.Y, bottomRight.Y)
+        )
+
+        box.Size = boxSize
+        box.Position = boxPosition
+        boxOutline.Size = boxSize
+        boxOutline.Position = boxPosition
+        box.Visible = true
+        boxOutline.Visible = true
+
+        local healthBarSize = Vector2.new(2, boxSize.Y * (humanoid.Health/humanoid.MaxHealth))
+        local healthBarPosition = Vector2.new(boxPosition.X - 5, boxPosition.Y + (boxSize.Y - healthBarSize.Y))
+        healthBar.Size = healthBarSize
+        healthBar.Position = healthBarPosition
+        healthBarOutline.Size = Vector2.new(2, boxSize.Y)
+        healthBarOutline.Position = Vector2.new(boxPosition.X - 5, boxPosition.Y)
+        healthBar.Visible = true
+        healthBarOutline.Visible = true
+
+        local distance = (rootPart.Position - camera.CFrame.Position).Magnitude
+        nameTag.Position = Vector2.new((boxPosition.X + boxSize.X/2), boxPosition.Y - 20)
+        nameTag.Text = string.format("%s [%dm]", plr.Name, math.floor(distance))
+        nameTag.Visible = true
+
+        local healthPercentage = humanoid.Health/humanoid.MaxHealth
+        healthBar.Color = Color3.fromRGB(255 - 255 * healthPercentage, 255 * healthPercentage, 0)
     end)
 
     character.AncestryChanged:Connect(function()
@@ -465,21 +405,14 @@ runService.RenderStepped:Connect(function()
     if aimbotActive and userInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
         local target = getClosestPlayerToMouse()
         if target then
-            if isPF then
-                local velocity = target.Parent.HumanoidRootPart.Velocity
-                local bulletSpeed = 2800
-                local timeToHit = (target.Position - camera.CFrame.Position).Magnitude / bulletSpeed
-                local predictedPosition = target.Position + (velocity * timeToHit)
-                local targetPos = camera:WorldToScreenPoint(predictedPosition)
-                local mousePos = Vector2.new(mouse.X, mouse.Y)
-                local moveAmount = (Vector2.new(targetPos.X, targetPos.Y) - mousePos) * smoothValue
-                mousemoverel(moveAmount.X, moveAmount.Y)
-            else
-                local targetPos = camera:WorldToScreenPoint(target.Position)
-                local mousePos = Vector2.new(mouse.X, mouse.Y)
-                local moveAmount = (Vector2.new(targetPos.X, targetPos.Y) - mousePos) * smoothValue
-                mousemoverel(moveAmount.X, moveAmount.Y)
-            end
+            local velocity = target.Parent.HumanoidRootPart.Velocity
+            local bulletSpeed = 2800
+            local timeToHit = (target.Position - camera.CFrame.Position).Magnitude / bulletSpeed
+            local predictedPosition = target.Position + (velocity * timeToHit)
+            local targetPos = camera:WorldToScreenPoint(predictedPosition)
+            local mousePos = Vector2.new(mouse.X, mouse.Y)
+            local moveAmount = (Vector2.new(targetPos.X, targetPos.Y) - mousePos) * smoothValue
+            mousemoverel(moveAmount.X, moveAmount.Y)
         end
     end
 end)
@@ -492,25 +425,16 @@ oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     if silentAimActive and (method == "FindPartOnRayWithIgnoreList" or method == "FindPartOnRay" or method == "Raycast") then
         local target = getClosestPlayerToMouse()
         if target then
-            if isPF then
-                local velocity = target.Parent.HumanoidRootPart.Velocity
-                local bulletSpeed = 2800
-                local timeToHit = (target.Position - camera.CFrame.Position).Magnitude / bulletSpeed
-                local predictedPosition = target.Position + (velocity * timeToHit)
-                
-                if method == "Raycast" then
-                    args[1] = (predictedPosition - camera.CFrame.Position).Unit
-                    args[2] = (predictedPosition - camera.CFrame.Position).Magnitude
-                else
-                    args[1] = Ray.new(camera.CFrame.Position, (predictedPosition - camera.CFrame.Position).Unit * 1000)
-                end
+            local velocity = target.Parent.HumanoidRootPart.Velocity
+            local bulletSpeed = 2800
+            local timeToHit = (target.Position - camera.CFrame.Position).Magnitude / bulletSpeed
+            local predictedPosition = target.Position + (velocity * timeToHit)
+            
+            if method == "Raycast" then
+                args[1] = (predictedPosition - camera.CFrame.Position).Unit
+                args[2] = (predictedPosition - camera.CFrame.Position).Magnitude
             else
-                if method == "Raycast" then
-                    args[1] = (target.Position - camera.CFrame.Position).Unit
-                    args[2] = (target.Position - camera.CFrame.Position).Magnitude
-                else
-                    args[1] = Ray.new(camera.CFrame.Position, (target.Position - camera.CFrame.Position).Unit * 1000)
-                end
+                args[1] = Ray.new(camera.CFrame.Position, (predictedPosition - camera.CFrame.Position).Unit * 1000)
             end
             return oldNamecall(self, unpack(args))
         end
