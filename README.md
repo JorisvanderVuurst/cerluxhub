@@ -32,7 +32,9 @@ AWP.GG or Wave for pc
 codex is free and paid for mobile
 
 
-Where to get the executors:
+Where to get the executors.
+
+
 PC:
 
 
@@ -49,6 +51,7 @@ PC:
     https://discord.gg/awpgg
 
 Mobile:
+
 
    Delta:
 
