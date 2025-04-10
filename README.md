@@ -22,15 +22,15 @@ either a pc or an android device maybe ios dont know what time you are watching 
 Free executors:
 
 ```solara or swift for pc```
-
-
-
+`
+`
+`
 ```delta or arceus x for mobile```
 
 Paid executors:
-
-
-
+`
+`
+`
 ```AWP.GG or Wave for pc```
 
 ```codex is free and paid for mobile```
@@ -41,8 +41,8 @@ Where to get the executors.
 
 
 PC:
-
-
+`
+`
   Solara:
 
     https://api.getsolara.gg
