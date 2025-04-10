@@ -21,15 +21,15 @@ either a pc or an android device maybe ios dont know what time you are watching 
 
 Free executors:
 
-```solara or swift for pc```
+solara or swift for pc
 
-```delta or arceus x for mobile```
+delta or arceus x for mobile
 
 Paid executors:
 
-```AWP.GG or Wave for pc```
+AWP.GG or Wave for pc
 
-```codex is free and paid for mobile```
+codex is free and paid for mobile
 
 
 Where to get the executors:
@@ -38,29 +38,29 @@ PC:
 
 Solara:
 
-```https://api.getsolara.gg```
+https://api.getsolara.gg
 
 Swift:
 
-```https://getswift.gg```
+https://getswift.gg
 
 AWP:
 
-```https://discord.gg/awpgg```
+https://discord.gg/awpgg
 
 Mobile:
 
 Delta:
 
-```https://delta-executor.com/deltaexploit/```
+https://delta-executor.com/deltaexploit/
 
 Arceus x:
 
-```https://arceusx.com/```
+https://arceusx.com/
 
 Codex:
 
-```https://codexexecutor.net/```
+https://codexexecutor.net/
 
 Not sure if it works with windows too.
 
