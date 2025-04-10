@@ -13,3 +13,35 @@ discord: notcerlux_
 loadstring if you like it better!
 
 ```loadstring(game:HttpGet("https://raw.githubusercontent.com/JorisvanderVuurst/cerluxhub/refs/heads/main/main.lua"))()```
+
+
+instructions to run:
+either a pc or an android device maybe ios dont know what time you are watching this
+
+
+Free executors:
+
+```solara or swift for pc```
+
+```delta or arceus x for mobile```
+
+Paid executors:
+
+```AWP.GG or Wave for pc```
+
+```codex is free and paid for mobile```
+
+
+```Where to get the executors:
+pc:
+
+solara:
+
+api.getsolara.gg
+
+swift:
+
+getswift.gg```
+
+
+
