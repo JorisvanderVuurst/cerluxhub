@@ -9,3 +9,7 @@ it is not the best gui but the aimbot and esp work good.
 should work with every executor dm me on discord if it doesnt ill try to fix it.
 
 discord: notcerlux_
+
+loadstring if you like it better!
+
+```loadstring(game:HttpGet("https://raw.githubusercontent.com/JorisvanderVuurst/cerluxhub/refs/heads/main/main.lua"))()```
