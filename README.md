@@ -36,31 +36,31 @@ Where to get the executors:
 PC:
 
 
-Solara:
+  Solara:
 
-https://api.getsolara.gg
+    https://api.getsolara.gg
 
-Swift:
+  Swift:
 
-https://getswift.gg
+    https://getswift.gg
 
-AWP:
+  AWP:
 
-https://discord.gg/awpgg
+    https://discord.gg/awpgg
 
 Mobile:
 
-Delta:
+   Delta:
 
-https://delta-executor.com/deltaexploit/
+     https://delta-executor.com/deltaexploit/
 
-Arceus x:
+  Arceus x:
 
-https://arceusx.com/
+    https://arceusx.com/
 
-Codex:
+  Codex:
 
-https://codexexecutor.net/
+    https://codexexecutor.net/
 
 Not sure if it works with windows too.
 
