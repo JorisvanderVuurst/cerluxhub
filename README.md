@@ -32,7 +32,7 @@ Paid executors:
 ```codex is free and paid for mobile```
 
 
-```Where to get the executors:
+````Where to get the executors:
 pc:
 
 solara:
@@ -41,7 +41,7 @@ api.getsolara.gg
 
 swift:
 
-getswift.gg```
+getswift.gg````
 
 
 
