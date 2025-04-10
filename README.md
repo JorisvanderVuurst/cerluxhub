@@ -6,5 +6,5 @@ do notice this script will get detected in games such as phantom forces, arsenal
 
 it is not the best gui but the aimbot and esp work good.
 
-should work with every executor dm me on discord if it doesnt ill try to fix it
-![](https://dcbadge.limes.pink/api/shield/notcerlux_)
+should work with every executor dm me on discord if it doesnt ill try to fix it.
+https://dcbadge.limes.pink/api/shield/notcerlux_
