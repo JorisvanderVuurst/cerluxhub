@@ -32,16 +32,33 @@ Paid executors:
 ```codex is free and paid for mobile```
 
 
-````Where to get the executors:
+Where to get the executors:
 pc:
 
-solara:
+```solara:
 
-api.getsolara.gg
+https://api.getsolara.gg```
 
-swift:
+```swift:
 
-getswift.gg````
+https://getswift.gg```
 
+```AWP:
+
+https://discord.gg/awpgg```
+
+mobile:
+
+```delta:
+
+https://delta-executor.com/deltaexploit/```
+
+```arceus x:
+
+https://arceusx.com/```
+
+https://codexexecutor.net/```
+
+not sure if it works with windows too
 
 
