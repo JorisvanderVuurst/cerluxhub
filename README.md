@@ -35,9 +35,10 @@ Paid executors:
 Where to get the executors:
 pc:
 
+```
 ```solara:
 
-https://api.getsolara.gg```
+https://api.getsolara.gg
 
 ```swift:
 
