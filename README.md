@@ -33,33 +33,35 @@ Paid executors:
 
 
 Where to get the executors:
-pc:
+PC:
 
-```
-```solara:
 
-https://api.getsolara.gg
+Solara:
 
-```swift:
+```https://api.getsolara.gg```
 
-https://getswift.gg```
+Swift:
 
-```AWP:
+```https://getswift.gg```
 
-https://discord.gg/awpgg```
+AWP:
 
-mobile:
+```https://discord.gg/awpgg```
 
-```delta:
+Mobile:
 
-https://delta-executor.com/deltaexploit/```
+Delta:
 
-```arceus x:
+```https://delta-executor.com/deltaexploit/```
 
-https://arceusx.com/```
+Arceus x:
 
-https://codexexecutor.net/```
+```https://arceusx.com/```
 
-not sure if it works with windows too
+Codex:
+
+```https://codexexecutor.net/```
+
+Not sure if it works with windows too.
 
 
