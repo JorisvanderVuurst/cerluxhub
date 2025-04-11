@@ -55,6 +55,10 @@ PC:
 
     https://discord.gg/awpgg
 
+  Wave:
+
+    https://waveexecutor.com/
+
 Mobile:
 
 
