@@ -12,7 +12,7 @@ discord: notcerlux_
 
 loadstring if you like it better!
 
-```loadstring(game:HttpGet("https://raw.githubusercontent.com/JorisvanderVuurst/cerluxhub/refs/heads/main/main.lua"))()```
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/JorisvanderVuurst/cerluxhub/refs/heads/main/main.lua"))()
 
 
 instructions to run:
